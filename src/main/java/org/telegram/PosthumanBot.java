@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.logging.BotLogger;
 
 import java.util.ResourceBundle;
 
-public class PosthumanBot extends TelegramLongPollingBot{
+public class PosthumanBot extends TelegramLongPollingBot {
 
 
     private static final String LOGTAG = "PosthumanBot";
@@ -17,28 +17,38 @@ public class PosthumanBot extends TelegramLongPollingBot{
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasSticker()){
-            BotLogger.info(LOGTAG, "Ive got massage : " + update.getMessage().getSticker());
+        System.out.println(update.getMessage());
+        String agree = null;
+        long chat_id = update.getMessage().getChatId();
+        if (isForwarded(update)) {
+            BotLogger.info(LOGTAG, "Ive got forward" + update.getMessage().getForwardFromChat());
+            agree = "Забавный мем конечно , но иди нахуй";
         }
         if (update.hasMessage() && update.getMessage().hasText()) {
             // Set variables
             String message_text = update.getMessage().getText();
             BotLogger.info(LOGTAG, "Ive got massage : " + message_text);
-            long chat_id = update.getMessage().getChatId();
-            String agree = addToMessage.addToMessage(message_text);
 
-            if (agree!=null) {
-                SendMessage message = new SendMessage() // Create a message object
-                        .setChatId(chat_id)
-                        .setText(agree);
-                try {
+            agree = addToMessage.addToMessage(message_text);
 
-                    execute(message); // Sending our message object to user
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
+        }
+        BotLogger.info(LOGTAG, agree);
+        if (agree != null) {
+            SendMessage message = new SendMessage() // Create a message object
+                    .setChatId(chat_id)
+                    .setText(agree);
+            try {
+
+                execute(message); // Sending our message object to user
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
             }
         }
+    }
+
+    private boolean isForwarded(Update update) {
+        System.out.println(update.getMessage().getPhoto());
+        return update.getMessage().getForwardFromChat() != null || update.getMessage().getPhoto() != null;
     }
 
     @Override
